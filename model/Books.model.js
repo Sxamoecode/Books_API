@@ -66,9 +66,9 @@ exports.getAllBooks = (req, res) => {
 }
 
 exports.getBook = (req, res, query) => {
-    bookTitle = query.toString().split('=')[1].replace('+', ' ')
-    console.log(bookTitle);
-    if (!bookTitle) {
+    bookTitle = query.toString().split('&')[0].split('=')[1].replace('+', ' ')
+    author = query.toString().split('&')[1].split('=')[1]
+    if (!bookTitle && author) {
         res.writeHead(404, {'Content-Type': 'application/json'});
         return res.end(JSON.stringify({
             message: 'Please insert valid details'
@@ -83,7 +83,7 @@ exports.getBook = (req, res, query) => {
             }))
         }
         parseBook = JSON.parse(book.toString())
-        findBook = parseBook.find(Book => Book.title === bookTitle)
+        findBook = parseBook.find(Book => Book.title === bookTitle && Book.author === author)
         console.log(findBook);
         if (!findBook) {
             res.writeHead(404, {'Content-Type': 'application/json'});
@@ -98,3 +98,58 @@ exports.getBook = (req, res, query) => {
         }))
     });
 }
+
+exports.editBook = (req, res, query) => {}
+
+exports.deleteBook = (req, res, query) => {
+    bookTitle = query.toString().split('&')[0].split('=')[1].replace('+', ' ');
+    author = query.toString().split('&')[1].split('=')[1];
+
+    if (!bookTitle) {
+        res.writeHead(404, {'Content-Type': 'application/json'});
+        return res.end(JSON.stringify({
+            message: 'Book Title and Author required'
+        }))
+    }
+
+    fs.readFile('model/Books.json', 'utf8', (err, book) => {
+        if(err) {
+            res.writeHead(500, {'Content-Type': 'application/json'});
+            console.log(err);
+            return res.end(JSON.stringify({
+                message: 'Couldn\'t read database'
+            }))
+        }
+        parseBook = JSON.parse(book.toString())
+        if (!parseBook) {
+            res.writeHead(404, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({
+                message: 'Book not found, pls'
+            }))
+        }
+        const findBook = parseBook.find(Book => Book.title === bookTitle && Book.author === author)
+        console.log(findBook);
+        if (!findBook) {
+            res.writeHead(404, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({
+                message: 'Book not found'
+            }))
+        }
+
+        const delBook = parseBook.filter(Book => Book.title !== bookTitle || Book.author !== author);
+        console.log(delBook);
+        fs.writeFile('model/Books.json', JSON.stringify(delBook), err => {
+            if (err) {
+                console.log(err);
+                res.writeHead(500, {'Content-Type': 'application/json'});
+                return res.end(JSON.stringify({
+                    message: 'Internal Server error',
+                }));
+            }
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({
+                message: 'Book Deletion successful'
+            }));
+        });
+    });
+};
