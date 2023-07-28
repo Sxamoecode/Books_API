@@ -13,7 +13,7 @@ exports.CreateBook = (req, res) => {
             dateCreated: new Date()
         }
         if (!Book.title || !Book.author) {
-            res.writeHead(200, {'Content-Type': 'application/json'});
+            res.writeHead(404, {'Content-Type': 'application/json'});
             res.end(JSON.stringify({
                 message: 'Insert Valid details'
             }))
@@ -99,7 +99,65 @@ exports.getBook = (req, res, query) => {
     });
 }
 
-exports.editBook = (req, res, query) => {}
+exports.editBook = (req, res) => {
+    let data = ''
+    req.on('data', chunk => {
+        data += chunk;
+    })
+    req.on('end', () => {
+        data = JSON.parse(data.toString());
+        console.log(data)
+        if (!data.title || !data.author) {
+            res.writeHead(404, {'Content-Type': 'application/json'});
+            res.end(JSON.stringify({
+                message: 'Insert All details please'
+            }))
+        }
+        fs.readFile('model/Books.json', 'utf8', (err, book) => {
+            if(err) {
+                res.writeHead(500, {'Content-Type': 'application/json'});
+                console.log(err);
+                return res.end(JSON.stringify({
+                    message: 'Server error'
+                }))
+            }
+            parseBook = JSON.parse(book.toString())
+            if (!parseBook) {
+                res.writeHead(404, {'Content-Type': 'application/json'});
+                return res.end(JSON.stringify({
+                    message: 'No Books on database'
+                }))
+            }
+            const findBook = parseBook.find(Book => Book.title === data.title && Book.author === data.author)
+            console.log(findBook);
+            if (!findBook) {
+                res.writeHead(404, {'Content-Type': 'application/json'});
+                return res.end(JSON.stringify({
+                    message: 'Book not found'
+                }))
+            }
+
+            const editedBook = parseBook.filter(Book => Book.title !== data.title || Book.author !== data.author);
+            console.log(editedBook);
+            editedBook.push(Book)
+            fs.writeFile('model/Books.json', JSON.stringify(parseBook), err => {
+                if (err) {
+                    res.writeHead(500, {'Content-Type': 'application/json'});
+                    return res.end(JSON.stringify({
+                        message: 'Book Not Created',
+                    }))
+                }
+                res.writeHead(201, {'Content-Type': 'application/json'});
+                console.log(Book)
+                return res.end(JSON.stringify({
+                    message: 'Book Update Success',
+                    Book: data
+                }));
+            })
+        })
+    })
+
+}
 
 exports.deleteBook = (req, res, query) => {
     bookTitle = query.toString().split('&')[0].split('=')[1].replace('+', ' ');

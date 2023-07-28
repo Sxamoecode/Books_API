@@ -3,6 +3,7 @@ const {
     CreateBook,
     getAllBooks,
     getBook,
+    editBook,
     deleteBook
 } = require('./model/Books.model')
 PORT = 5000
@@ -33,6 +34,9 @@ const server = http.createServer((req, res) => {
                     break
                 case 'DELETE':
                     deleteBook(req, res, query);
+                    break
+                case 'PUT':
+                    editBook(req, res);
                     break
             }
         case '/Books':
