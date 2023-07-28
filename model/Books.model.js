@@ -121,10 +121,11 @@ exports.deleteBook = (req, res, query) => {
             }))
         }
         parseBook = JSON.parse(book.toString())
+        console.log(parseBook)
         if (!parseBook) {
             res.writeHead(404, {'Content-Type': 'application/json'});
             return res.end(JSON.stringify({
-                message: 'Book not found, pls'
+                message: 'Book not found'
             }))
         }
         const findBook = parseBook.find(Book => Book.title === bookTitle && Book.author === author)

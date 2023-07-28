@@ -23,7 +23,7 @@ const server = http.createServer((req, res) => {
                 message: 'Home Page'
             }))
             break;
-        case '/book':
+        case '/Books/book':
             switch (method) {
                 case 'POST':
                     CreateBook(req, res);
@@ -31,12 +31,12 @@ const server = http.createServer((req, res) => {
                 case 'GET':
                     getBook(req, res, query);
                     break
+                case 'DELETE':
+                    deleteBook(req, res, query);
+                    break
             }
-            break
-        case '/books':
+        case '/Books':
             getAllBooks(req, res);
-        case '/delBook':
-            deleteBook(req, res, query);
             break
     
         default:
