@@ -1,5 +1,5 @@
 const http = require('http')
-const {CreateBook} = require('./model/Books.model')
+const {CreateBook, getAllBooks, getBook} = require('./model/Books.model')
 PORT = 5000
 
 const server = http.createServer((req, res) => {
@@ -19,8 +19,17 @@ const server = http.createServer((req, res) => {
             }))
             break;
         case '/book':
-            CreateBook(req, res);
+            switch (method) {
+                case 'POST':
+                    CreateBook(req, res);
+                    break
+                case 'GET':
+                    getBook(req, res, query);
+                    break
+            }
             break
+        case '/books':
+            getAllBooks(req, res);
     
         default:
             break;
