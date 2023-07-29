@@ -50,5 +50,5 @@ const server = http.createServer((req, res) => {
 
 
 server.listen(PORT, () => {
-    console.log(`Server up and running on https://localhost:${PORT}`);
+    console.log(`Server up and running on http://localhost:${PORT}`);
 })
