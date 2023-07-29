@@ -58,6 +58,9 @@ exports.getAllBooks = (req, res) => {
         }
         console.log(book.toString());
         res.writeHead(200, {'Content-Type': 'application/json'});
+        if (err) {
+            console.log(err)
+        }
         return res.end(JSON.stringify({
             message: 'Books Retrieval Success',
             books: JSON.parse(book.toString())
@@ -93,7 +96,7 @@ exports.getBook = (req, res, query) => {
         }
         res.writeHead(200, {'Content-Type': 'application/json'});
         return res.end(JSON.stringify({
-            message: 'Book retrieval successful',
+            message: 'Book retrieved successfully',
             book: findBook
         }))
     });
@@ -101,13 +104,18 @@ exports.getBook = (req, res, query) => {
 
 exports.editBook = (req, res) => {
     let data = ''
-    req.on('data', chunk => {
+    req.on('data', (chunk) => {
         data += chunk;
     })
     req.on('end', () => {
         data = JSON.parse(data.toString());
-        console.log(data)
-        if (!data.title || !data.author) {
+        const Book = {
+            title: data.title,
+            author: data.author,
+            dateCreated: new Date()
+        }
+        console.log(Book)
+        if (!Book.title || !Book.author) {
             res.writeHead(404, {'Content-Type': 'application/json'});
             res.end(JSON.stringify({
                 message: 'Insert All details please'
@@ -122,25 +130,26 @@ exports.editBook = (req, res) => {
                 }))
             }
             parseBook = JSON.parse(book.toString())
+            //console.log(parseBook);
             if (!parseBook) {
                 res.writeHead(404, {'Content-Type': 'application/json'});
                 return res.end(JSON.stringify({
-                    message: 'No Books on database'
+                    message: 'No Book on database'
                 }))
             }
-            const findBook = parseBook.find(Book => Book.title === data.title && Book.author === data.author)
-            console.log(findBook);
+            const findBook = parseBook.find(book => book.author === Book.author)
             if (!findBook) {
                 res.writeHead(404, {'Content-Type': 'application/json'});
                 return res.end(JSON.stringify({
                     message: 'Book not found'
                 }))
             }
+            console.log(findBook);
 
-            const editedBook = parseBook.filter(Book => Book.title !== data.title || Book.author !== data.author);
-            console.log(editedBook);
-            editedBook.push(Book)
-            fs.writeFile('model/Books.json', JSON.stringify(parseBook), err => {
+            const editedBook = parseBook.filter(book => book.author !== Book.author);
+            editedBook.push(Book);
+            console.log(editedBook)
+            fs.writeFile('model/Books.json', JSON.stringify(editedBook), err => {
                 if (err) {
                     res.writeHead(500, {'Content-Type': 'application/json'});
                     return res.end(JSON.stringify({
@@ -148,10 +157,10 @@ exports.editBook = (req, res) => {
                     }))
                 }
                 res.writeHead(201, {'Content-Type': 'application/json'});
-                console.log(Book)
+                //console.log(Book)
                 return res.end(JSON.stringify({
                     message: 'Book Update Success',
-                    Book: data
+                    Book: Book
                 }));
             })
         })
@@ -183,7 +192,7 @@ exports.deleteBook = (req, res, query) => {
         if (!parseBook) {
             res.writeHead(404, {'Content-Type': 'application/json'});
             return res.end(JSON.stringify({
-                message: 'Book not found'
+                message: 'No Book on database'
             }))
         }
         const findBook = parseBook.find(Book => Book.title === bookTitle && Book.author === author)
